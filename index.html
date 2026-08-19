@@ -1,0 +1,199 @@
+<!DOCTYPE html>
+<html lang="es" data-theme="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sarovi | Partidos de Élite Premium (92%+)</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <header class="navbar">
+        <div class="logo">SAROVI <span>Premium</span></div>
+        <nav>
+            <a href="index.html">Todos los Partidos</a>
+            <a href="partidos-destacados.html" class="active">Top 90%+ Efectividad</a>
+            <button id="themeToggleBtn" class="btn-theme-toggle" onclick="alternarTemaVisual()">☀️</button>
+        </nav>
+    </header>
+
+    <main class="container">
+        <!-- SECCIÓN DE INFOGRAFÍA PREMIUM -->
+        <section class="hero premium-hero">
+            <h1>Filtrado Estratégico de Alta Eficiencia (92%+)</h1>
+            <p>Sección automatizada que aisla de los 50 partidos del día únicamente aquellos que superan las métricas más exigentes del algoritmo de las API Keys.</p>
+        </section>
+
+        <!-- ACCIONES RÁPIDAS DE HOJA DE RUTA -->
+        <div class="table-actions-bar">
+            <div class="search-box-container">
+                <input type="text" id="saroviSearchInput" placeholder="🔍 Buscar en destacados..." onkeyup="filtrarPartidos()">
+            </div>
+            <button class="btn-exportar" onclick="exportarTablaExcel()">📥 Exportar Élite (CSV)</button>
+        </div>
+
+        <!-- TABLA DE PARTIDOS FILTRADOS -->
+        <section class="table-container">
+            <h2>Pronósticos de Élite Seleccionados para Hoy</h2>
+            <table class="data-table" id="tablaPartidos">
+                <thead>
+                    <tr>
+                        <th>Fav</th>
+                        <th>Liga</th>
+                        <th>Partido / Cuenta Regresiva</th>
+                        <th>Resultado Est.</th>
+                        <th>Ambos Anotan</th>
+                        <th>+1.5 Goles</th>
+                        <th>+2.5 Goles</th>
+                        <th>Córners</th>
+                        <th>Tarjetas</th>
+                        <th>Confianza (Inversión)</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <!-- DATA_ROWS -->
+                    <!-- DATA_ROWS -->
+                </tbody>
+            </table>
+        </section>
+    </main>
+
+    <!-- VENTANA MODAL INTEGRADA PARA APUESTAS DE ALTO STAKE -->
+    <div id="modalCalculadora" class="sarovi-modal">
+        <div class="modal-content">
+            <span class="close-btn" onclick="cerrarModal()">&times;</span>
+            <h2>Calculadora de Stake Inteligente (Kelly)</h2>
+            <p id="calcPartido" style="color: var(--accent-green); font-weight: bold; margin-bottom: 1rem;"></p>
+            <div class="form-group">
+                <label>Probabilidad del Algoritmo (%):</label>
+                <input type="number" id="calcProb" readonly>
+            </div>
+            <div class="form-group">
+                <label>Cuota de la Casa de Apuestas (Ej: 1.85):</label>
+                <input type="number" id="calcCuota" value="1.80" step="0.05" oninput="calcularCriterioKelly()">
+            </div>
+            <div class="resultado-kelly-box">
+                <h4>Inversión Sugerida para Élite:</h4>
+                <div id="kellySugerido" style="font-size: 1.8rem; font-weight: 800; color: var(--accent-green);">0.00%</div>
+                <p id="kellyDinero" style="color: var(--text-muted); font-size: 0.9rem;"></p>
+            </div>
+        </div>
+    </div>
+
+    <footer>
+        <p>&copy; 2026 Sarovi Analytics. Filtros de alta gama probabilística.</p>
+    </footer>
+
+    <script>
+        let favoritos = JSON.parse(localStorage.getItem('sarovi_favoritos')) || [];
+        let bankrollActual = parseFloat(localStorage.getItem('sarovi_bankroll')) || 1000.00;
+
+        function toggleDetallesSarovi(rowId) {
+            const fila = document.getElementById(rowId);
+            if(fila) fila.style.display = fila.style.display === "none" ? "table-row" : "none";
+        }
+
+        function toggleFavorito(id) {
+            favoritos = favoritos.includes(id) ? favoritos.filter(f => f !== id) : [...favoritos, id];
+            localStorage.setItem('sarovi_favoritos', JSON.stringify(favoritos));
+            actualizarFavoritosVisuales();
+        }
+
+        function actualizarFavoritosVisuales() {
+            document.querySelectorAll("#tablaPartidos tbody tr.master-row").forEach(tr => {
+                const id = tr.getAttribute("data-id");
+                const btn = tr.querySelector(".btn-favorito");
+                if (favoritos.includes(id)) { tr.classList.add("partido-favorito"); btn.classList.add("active"); }
+                else { tr.classList.remove("partido-favorito"); btn.classList.remove("active"); }
+            });
+        }
+
+        function filtrarPartidos() {
+            const filter = document.getElementById("saroviSearchInput").value.toLowerCase();
+            document.querySelectorAll("#tablaPartidos tbody tr.master-row").forEach(tr => {
+                tr.style.display = tr.innerText.toLowerCase().includes(filter) ? "" : "none";
+                if(tr.style.display === "none" && tr.nextElementSibling && tr.nextElementSibling.classList.contains("detail-row")) {
+                    tr.nextElementSibling.style.display = "none";
+                }
+            });
+        }
+
+        function actualizarRelojes() {
+            document.querySelectorAll(".celda-partido").forEach(celda => {
+                const timeStr = celda.getAttribute("data-time");
+                const reloj = celda.querySelector(".countdown-clock");
+                if (!timeStr || !reloj) return;
+                const dif = new Date(timeStr).getTime() - new Date().getTime();
+                if (dif <= 0) { reloj.innerHTML = "• EN VIVO"; reloj.className = "countdown-clock clock-live"; }
+                else {
+                    const h = Math.floor((dif % 86400000) / 3600000);
+                    const m = Math.floor((dif % 3600000) / 60000);
+                    const s = Math.floor((dif % 60000) / 1000);
+                    reloj.innerHTML = `⏳ Inicia en: ${h > 0 ? h + 'h ' : ''}${m}m ${s}s`;
+                }
+            });
+        }
+
+        function abrirCalculadora(partido, prob) {
+            document.getElementById('calcPartido').innerText = partido;
+            document.getElementById('calcProb').value = prob;
+            document.getElementById('modalCalculadora').style.display = "flex";
+            calcularCriterioKelly();
+        }
+
+        function cerrarModal() { document.getElementById('modalCalculadora').style.display = "none"; }
+
+        function calcularCriterioKelly() {
+            const p = parseFloat(document.getElementById('calcProb').value) / 100;
+            const cuota = parseFloat(document.getElementById('calcCuota').value);
+            const b = cuota - 1;
+            if(isNaN(cuota) || cuota <= 1) {  document.getElementById('kellySugerido').innerText = "Inválida"; return; }
+            let stake = (((b * p) - (1 - p)) / b) * 100 * 0.25;
+            stake = stake < 0 ? 0 : stake;
+            document.getElementById('kellySugerido').innerText = stake.toFixed(2) + "%";
+            document.getElementById('kellyDinero').innerText = `Monto: $${(bankrollActual * (stake / 100)).toFixed(2)}`;
+        }
+
+        document.querySelector("#tablaPartidos tbody").addEventListener("click", (e) => {
+            if (e.target.closest(".btn-favorito") || e.target.closest(".detail-row")) return;
+            const tr = e.target.closest(".master-row");
+            if(tr) {
+                const targetCelda = e.target.closest("td");
+                if(targetCelda && targetCelda === tr.cells[tr.cells.length - 1]) {
+                    e.stopPropagation();
+                    abrirCalculadora(tr.querySelector(".info-evento").innerText, parseInt(tr.getAttribute("data-confianza")));
+                }
+            }
+        });
+
+        document.addEventListener("DOMContentLoaded", () => {
+            actualizarFavoritosVisuales();
+            setInterval(actualizarRelojes, 1000);
+            
+            const tema = localStorage.getItem('sarovi_theme') || 'dark';
+            document.documentElement.setAttribute('data-theme', tema);
+            document.getElementById("themeToggleBtn").innerText = tema === 'dark' ? '☀️' : '🌙';
+        });
+
+        function alternarTemaVisual() {
+            const t = document.documentElement.getAttribute('data-theme') === 'dark' ? 'light' : 'dark';
+            document.documentElement.setAttribute('data-theme', t);
+            localStorage.setItem('sarovi_theme', t);
+            document.getElementById("themeToggleBtn").innerText = t === 'dark' ? '☀️' : '🌙';
+        }
+
+        function exportarTablaExcel() {
+            let csv = [];
+            document.querySelectorAll("#tablaPartidos tr").forEach(tr => {
+                if(tr.style.display === "none" || tr.classList.contains("detail-row")) return;
+                let row = [];
+                tr.querySelectorAll("th, td").forEach(c => row.push('"' + c.innerText.replace(/🔥/g, '').trim().replace(/"/g, '""') + '"'));
+                csv.push(row.join(","));
+            });
+            const link = document.createElement("a");
+            link.setAttribute("href", URL.createObjectURL(new Blob(["\uFEFF" + csv.join("\n")], { type: 'text/csv;charset=utf-8;' })));
+            link.setAttribute("download", "Sarovi_Elite_Predictions.csv");
+            document.body.appendChild(link); link.click(); document.body.removeChild(link);
+        }
+    </script>
+</body>
+</html>

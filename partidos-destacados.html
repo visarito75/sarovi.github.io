@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<html lang="es" data-theme="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sarovi | Partidos de Élite Premium</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <header class="navbar">
+        <div class="logo">SAROVI <span>Premium</span></div>
+        <nav>
+            <a href="index.html">Todos los Partidos</a>
+            <a href="partidos-destacados.html" class="active">Top 90%+ Efectividad</a>
+        </nav>
+    </header>
+
+    <main class="container">
+        <section class="hero premium-hero">
+            <h1>Filtrado Estratégico de Alta Eficiencia</h1>
+            <p>Sección restringida que almacena exclusivamente los partidos con mayor probabilidad matemática registrada por las API Keys.</p>
+        </section>
+
+        <section class="table-container">
+            <h2>Pronósticos de Élite del Día</h2>
+            <table class="data-table" id="tablaPartidos">
+                <thead>
+                    <tr>
+                        <th>Fav</th>
+                        <th>Liga</th>
+                        <th>Partido / Cuenta Regresiva</th>
+                        <th>Resultado Est.</th>
+                        <th>Ambos Anotan</th>
+                        <th>+1.5 Goles</th>
+                        <th>+2.5 Goles</th>
+                        <th>Córners</th>
+                        <th>Tarjetas</th>
+                        <th>Confianza</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <!-- DATA_ROWS -->
+                    <!-- DATA_ROWS -->
+                </tbody>
+            </table>
+        </section>
+    </main>
+
+    <footer>
+        <p>&copy; 2026 Sarovi Analytics.</p>
+    </footer>
+
+    <script>
+        function toggleDetallesSarovi(id) {
+            const f = document.getElementById(id); if(f) f.style.display = f.style.display === "none" ? "table-row" : "none";
+        }
+        function toggleFavorito(id) {
+            let favs = JSON.parse(localStorage.getItem('sarovi_favoritos')) || [];
+            favs = favs.includes(id) ? favs.filter(f => f !== id) : [...favs, id];
+            localStorage.setItem('sarovi_favoritos', JSON.stringify(favs));
+            location.reload();
+        }
+        document.addEventListener("DOMContentLoaded", () => {
+            const favs = JSON.parse(localStorage.getItem('sarovi_favoritos')) || [];
+            document.querySelectorAll(".master-row").forEach(tr => {
+                if(favs.includes(tr.getAttribute("data-id"))) {
+                    tr.classList.add("partido-favorito");
+                    tr.querySelector(".btn-favorito").classList.add("active");
+                }
+            });
+            document.documentElement.setAttribute('data-theme', localStorage.getItem('sarovi_theme') || 'dark');
+        });
+    </script>
+</body>
+</html>
